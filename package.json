@@ -1,0 +1,27 @@
+{
+  "name": "genlayer-escrow-bot",
+  "version": "1.0.0",
+  "description": "Telegram escrow bot powered by GenLayer Intelligent Contracts with AI dispute resolution",
+  "type": "module",
+  "main": "bot/index.js",
+  "scripts": {
+    "start": "node bot/index.js",
+    "dev": "node --watch bot/index.js"
+  },
+  "dependencies": {
+    "dotenv": "^16.4.7",
+    "genlayer-js": "^0.18.10",
+    "grammy": "^1.31.0"
+  },
+  "keywords": [
+    "genlayer",
+    "escrow",
+    "telegram",
+    "bot",
+    "blockchain",
+    "intelligent-contracts",
+    "ai",
+    "web3"
+  ],
+  "license": "MIT"
+}
