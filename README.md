@@ -1,43 +1,93 @@
-# GenLayer Escrow Bot
+# GenLayer Escrow Marketplace Bot
 
-A Telegram bot for trustless escrow deals powered by **GenLayer Intelligent Contracts** with AI-driven dispute resolution.
+A Telegram escrow marketplace powered by **GenLayer Intelligent Contracts** with AI-driven dispute resolution.
 
 ## What It Does
 
-- **Buyer** creates an escrow deal and deposits GEN tokens
-- **Seller** delivers the product/service off-chain
+- **Seller** creates an escrow order with amount, delivery time, and description
+- **Buyer** views the order, submits a GenLayer explorer link, and locks the deal
+- **Seller** delivers the product/service off-chain and notifies the buyer
 - **Buyer** confirms delivery (funds release to seller) OR raises a dispute
-- **Disputes** are resolved by GenLayer's AI validator consensus - multiple validators running different LLMs evaluate the case and vote
+- **Disputes** are resolved by GenLayer's AI validator consensus — multiple validators running different LLMs evaluate the case and vote: **BUYER REFUNDED** or **SELLER PAID**
+- **Admin** is notified when orders are locked for oversight
 
 ## Why GenLayer?
 
-Traditional escrow needs a trusted third party. GenLayer replaces that with **Optimistic Democracy** - a consensus mechanism where AI validators independently evaluate disputes and reach agreement. No human arbitrator needed.
+Traditional escrow needs a trusted third party. GenLayer replaces that with **Optimistic Democracy** — a consensus mechanism where AI validators independently evaluate disputes and reach agreement. No human arbitrator needed.
 
 ## Architecture
 
 ```
-Telegram User
-     |
-  Telegram Bot (Node.js + grammY)
-     |
-  GenLayerJS SDK
-     |
-  GenLayer Network (Studionet / Testnet)
-     |
-  Escrow Intelligent Contract (Python)
+Seller (Telegram)          Buyer (Telegram)
+       \                      /
+        \                    /
+     Telegram Bot (Node.js + grammY)
+         |              |
+   Order Store       Admin Notifier
+   (In-Memory)      (@karlkestis)
+         |
+    GenLayerJS SDK
+         |
+    GenLayer Network (Studionet / Testnet)
+         |
+    Escrow Intelligent Contract (Python)
 ```
 
 ## Bot Commands
 
+### Seller Commands
+
 | Command | Description |
 |---------|-------------|
-| `/start` | Welcome message and instructions |
+| `/createorder` | Create a new order (step-by-step: amount, delivery time, description) |
+| `/cancelorder <ID>` | Cancel an open order (before buyer locks it) |
+| `/delivered <ID>` | Notify buyer that you've delivered |
+| `/myorders` | View all your orders |
+
+### Buyer Commands
+
+| Command | Description |
+|---------|-------------|
+| `/vieworder <ID>` | View order details (amount, delivery time, seller) |
+| `/lockorder <ID>` | Lock order and fund escrow on-chain |
+| `/rejectorder <ID>` | Reject an order (seller notified) |
+
+### After Deal is Locked
+
+| Command | Description |
+|---------|-------------|
+| `/confirm <ID>` | Confirm delivery — releases funds to seller |
+| `/dispute <ID> <reason>` | Raise an AI-powered dispute — validators vote |
+| `/cancel <ID>` | Cancel and refund buyer |
+
+### General
+
+| Command | Description |
+|---------|-------------|
+| `/start` | Welcome message and full instructions |
 | `/help` | List all commands |
-| `/status` | Check current escrow status |
-| `/fund <amount>` | Deposit GEN tokens into escrow |
-| `/confirm` | Confirm delivery (releases funds to seller) |
-| `/dispute <reason>` | Raise an AI-arbitrated dispute |
-| `/cancel` | Cancel escrow and get refund |
+
+## Demo Flow
+
+### Happy Path (No Dispute)
+
+1. **Seller** sends `/createorder` — bot asks amount, delivery time, description step by step
+2. **Seller** gets an Order ID (e.g., `ORD-A7X3`) and shares it with the buyer
+3. **Buyer** sends `/vieworder ORD-A7X3` — sees order details with delivery time highlighted
+4. **Buyer** pastes a GenLayer explorer link in the chat — bot saves it and notifies admin
+5. **Buyer** sends `/lockorder ORD-A7X3` — escrow funded on-chain, seller notified
+6. **Seller** delivers the product/service, then sends `/delivered ORD-A7X3` — buyer notified
+7. **Buyer** sends `/confirm ORD-A7X3` — funds released to seller. Deal complete.
+
+### Dispute Path (AI Arbitration)
+
+1. Steps 1–6 same as above
+2. **Buyer** sends `/dispute ORD-A7X3 Seller delivered a blurry 100x100 logo instead of HD`
+3. GenLayer validators (each running a **different AI model**) independently evaluate the dispute
+4. Validators vote: **BUYER REFUNDED** or **SELLER PAID**
+5. Funds transferred automatically based on AI consensus
+
+The dispute flow is the star feature — true AI arbitration with no human in the loop.
 
 ## Setup Guide
 
@@ -62,6 +112,7 @@ Telegram User
 
 ```bash
 # Clone and enter the project
+git clone https://github.com/bolarinwa420/genlayer-escrow-bot.git
 cd genlayer-escrow-bot
 
 # Install dependencies
@@ -72,9 +123,10 @@ cp .env.example .env
 ```
 
 Edit `.env` and fill in:
-- `BOT_TOKEN` - From Step 1
-- `PRIVATE_KEY` - Your wallet private key (with 0x prefix)
-- `CONTRACT_ADDRESS` - From Step 2
+- `BOT_TOKEN` — From Step 1
+- `PRIVATE_KEY` — Your wallet private key (with 0x prefix)
+- `CONTRACT_ADDRESS` — From Step 2
+- `ADMIN_CHAT_ID` — Your Telegram chat ID (for order lock notifications)
 
 ### Step 4: Run the Bot
 
@@ -87,62 +139,58 @@ For development with auto-reload:
 npm run dev
 ```
 
-## Demo Flow
-
-Here's how to demo the escrow bot:
-
-1. **Start**: Send `/start` to the bot in Telegram
-2. **Check Status**: Send `/status` to see the escrow details
-3. **Fund**: Send `/fund 10` to deposit 10 GEN tokens
-4. **Happy Path**: Send `/confirm` to release funds
-5. **Dispute Path**: Send `/dispute The seller delivered a blurry logo instead of HD` to trigger AI arbitration
-
-The dispute flow is the star feature - GenLayer validators will independently evaluate the case using different AI models and vote on the outcome.
-
 ## Tech Stack
 
 | Component | Technology |
 |-----------|-----------|
 | Smart Contract | Python + GenVM SDK |
 | Bot Framework | grammY (Node.js) |
-| Blockchain SDK | GenLayerJS |
+| Blockchain SDK | GenLayerJS v0.18.10 |
 | Network | GenLayer Studionet / Testnet |
 | Deployment | GenLayer Studio |
+| Order Storage | In-memory (demo) |
 
 ## How AI Dispute Resolution Works
 
 When a dispute is raised:
 
 1. Transaction is submitted to GenLayer network
-2. A random subset of 5 validators is selected
+2. A random subset of validators is selected
 3. Each validator runs a **different LLM** (GPT-4, Claude, etc.)
 4. The lead validator proposes an outcome
 5. Other validators independently evaluate and vote
-6. Consensus determines: **REFUND** buyer or **RELEASE** to seller
+6. Consensus determines: **BUYER REFUNDED** or **SELLER PAID**
 7. Funds are transferred automatically based on the verdict
 
-This is **Optimistic Democracy** - GenLayer's unique consensus mechanism.
+This is **Optimistic Democracy** — GenLayer's unique consensus mechanism.
 
 ## Project Structure
 
 ```
 genlayer-escrow-bot/
 ├── contracts/
-│   └── escrow.py              # Intelligent Contract (deploy via Studio)
+│   └── escrow.py                # Intelligent Contract (deploy via Studio)
 ├── bot/
-│   ├── index.js               # Bot entry point
-│   ├── config.js              # Environment configuration
+│   ├── index.js                 # Bot entry point + explorer link detection
+│   ├── config.js                # Environment configuration
 │   ├── commands/
-│   │   ├── start.js           # /start and /help commands
-│   │   ├── status.js          # /status command
-│   │   ├── fund.js            # /fund command
-│   │   ├── confirm.js         # /confirm command
-│   │   ├── dispute.js         # /dispute command
-│   │   └── cancel.js          # /cancel command
+│   │   ├── start.js             # /start and /help
+│   │   ├── createorder.js       # /createorder (step-by-step flow)
+│   │   ├── cancelorder.js       # /cancelorder
+│   │   ├── vieworder.js         # /vieworder
+│   │   ├── lockorder.js         # /lockorder (funds escrow on-chain)
+│   │   ├── rejectorder.js       # /rejectorder
+│   │   ├── delivered.js         # /delivered (seller notifies buyer)
+│   │   ├── confirm.js           # /confirm (release funds)
+│   │   ├── dispute.js           # /dispute (AI arbitration)
+│   │   ├── cancel.js            # /cancel (refund)
+│   │   └── myorders.js          # /myorders
 │   └── services/
-│       └── genlayer.js        # GenLayerJS SDK wrapper
+│       ├── genlayer.js          # GenLayerJS SDK wrapper
+│       ├── orderStore.js        # In-memory order management
+│       └── adminNotifier.js     # Admin notification service
 ├── package.json
-├── .env.example               # Environment template
+├── .env.example                 # Environment template
 ├── .gitignore
 └── README.md
 ```
