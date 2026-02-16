@@ -39,6 +39,9 @@ registerDeliveredCommand(bot);
 bot.on("message:text", async (ctx) => {
   const text = ctx.message.text;
 
+  // Log every message with chat ID (useful for finding ADMIN_CHAT_ID)
+  console.log("Message from " + (ctx.from.username || ctx.from.first_name) + " | User ID: " + ctx.from.id + " | Chat ID: " + ctx.chat.id);
+
   // Skip commands — they're handled above
   if (text.startsWith("/")) {
     await ctx.reply(
