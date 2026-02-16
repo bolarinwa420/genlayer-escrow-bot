@@ -17,6 +17,9 @@ export const config = {
 
   // Chain setting
   chain: process.env.CHAIN || "studionet",
+
+  // Admin Telegram chat ID for order notifications
+  adminChatId: process.env.ADMIN_CHAT_ID || null,
 };
 
 // Validate required config

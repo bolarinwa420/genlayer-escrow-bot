@@ -5,38 +5,58 @@ export function registerStartCommand(bot) {
     const walletAddress = getWalletAddress();
 
     await ctx.reply(
-      `Welcome to the GenLayer Escrow Bot!\n\n` +
-        `This bot lets you manage trustless escrow deals powered by GenLayer's AI-driven blockchain.\n\n` +
-        `Bot Wallet: ${walletAddress}\n\n` +
-        `COMMANDS:\n` +
-        `/status - Check current escrow status\n` +
-        `/fund <amount> - Deposit GEN tokens into escrow\n` +
-        `/confirm - Confirm delivery (releases funds to seller)\n` +
-        `/dispute <reason> - Raise an AI-arbitrated dispute\n` +
-        `/cancel - Cancel escrow and get refund\n` +
-        `/help - Show this help message\n\n` +
-        `HOW IT WORKS:\n` +
-        `1. Contract is deployed via GenLayer Studio\n` +
-        `2. Buyer funds the escrow with /fund\n` +
-        `3. Seller delivers the product/service\n` +
-        `4. Buyer confirms with /confirm OR raises /dispute\n` +
-        `5. Disputes are resolved by AI validators!\n\n` +
-        `Powered by GenLayer - The Intelligence Layer of the Internet`,
-      { parse_mode: undefined }
+      "GenLayer Escrow Marketplace\n\n" +
+        "Trustless escrow deals powered by AI dispute resolution.\n\n" +
+        "Bot Wallet: " + walletAddress + "\n\n" +
+        "SELLER COMMANDS:\n" +
+        "/createorder — Create a new escrow order (step-by-step)\n" +
+        "/cancelorder <ID> — Cancel an open order\n" +
+        "/delivered <ID> — Notify buyer you've delivered\n" +
+        "/myorders — View your orders\n\n" +
+        "BUYER COMMANDS:\n" +
+        "/vieworder <ID> — View order details\n" +
+        "/lockorder <ID> — Lock order and fund escrow\n" +
+        "/rejectorder <ID> — Reject an order\n\n" +
+        "AFTER LOCKING:\n" +
+        "/confirm <ID> — Confirm delivery (release funds)\n" +
+        "/dispute <ID> <reason> — AI-powered dispute resolution\n" +
+        "/cancel <ID> — Cancel and get refund\n\n" +
+        "HOW IT WORKS:\n" +
+        "1. Seller creates an order with /createorder\n" +
+        "2. Seller shares the Order ID with buyer\n" +
+        "3. Buyer views order with /vieworder\n" +
+        "4. Buyer pastes GenLayer explorer link\n" +
+        "5. Buyer locks order with /lockorder\n" +
+        "6. Seller delivers the product/service\n" +
+        "7. Buyer confirms OR raises an AI dispute\n\n" +
+        "Disputes are resolved by GenLayer AI validators —\n" +
+        "multiple AI models vote independently. No human needed.\n\n" +
+        "Type /help for the command list."
     );
   });
 
   bot.command("help", async (ctx) => {
     await ctx.reply(
-      `ESCROW BOT COMMANDS:\n\n` +
-        `/status - View escrow details and current state\n` +
-        `/fund <amount> - Fund escrow (amount in GEN tokens)\n` +
-        `/confirm - Buyer confirms delivery, funds go to seller\n` +
-        `/dispute <reason> - Open an AI-powered dispute\n` +
-        `/cancel - Cancel escrow and refund (before completion)\n\n` +
-        `EXAMPLE:\n` +
-        `/fund 100\n` +
-        `/dispute Seller did not deliver the logo design on time`
+      "ESCROW MARKETPLACE COMMANDS:\n\n" +
+        "SELLER:\n" +
+        "/createorder — New order (step-by-step)\n" +
+        "/cancelorder <ID> — Cancel open order\n" +
+        "/delivered <ID> — Notify buyer of delivery\n" +
+        "/myorders — List your orders\n\n" +
+        "BUYER:\n" +
+        "/vieworder <ID> — View order details\n" +
+        "/lockorder <ID> — Lock and fund escrow\n" +
+        "/rejectorder <ID> — Reject order\n\n" +
+        "AFTER DEAL IS LOCKED:\n" +
+        "/confirm <ID> — Release funds to seller\n" +
+        "/dispute <ID> <reason> — AI dispute resolution\n" +
+        "/cancel <ID> — Cancel and refund\n\n" +
+        "EXAMPLE FLOW:\n" +
+        "Seller: /createorder\n" +
+        "Buyer: /vieworder ORD-A7X3\n" +
+        "Buyer: paste explorer link\n" +
+        "Buyer: /lockorder ORD-A7X3\n" +
+        "Buyer: /confirm ORD-A7X3"
     );
   });
 }
