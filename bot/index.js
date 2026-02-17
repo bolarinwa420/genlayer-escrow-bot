@@ -16,7 +16,7 @@ import { registerDisputeCommand } from "./commands/dispute.js";
 import { registerCancelCommand } from "./commands/cancel.js";
 import { registerDeliveredCommand } from "./commands/delivered.js";
 
-// Create bot instance
+// Initialize bot
 const bot = new Bot(config.botToken);
 
 // Register all commands

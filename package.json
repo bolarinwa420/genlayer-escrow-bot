@@ -1,6 +1,6 @@
 {
   "name": "genlayer-escrow-bot",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "Telegram escrow bot powered by GenLayer Intelligent Contracts with AI dispute resolution",
   "type": "module",
   "main": "bot/index.js",
