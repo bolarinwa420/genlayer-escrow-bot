@@ -201,3 +201,7 @@ genlayer-escrow-bot/
 - [GenLayer Studio](https://studio.genlayer.com/contracts)
 - [GenLayerJS SDK](https://docs.genlayer.com/api-references/genlayer-js)
 - [grammY Telegram Framework](https://grammy.dev/)
+
+---
+
+Built for the [GenLayer Building Program](https://genlayer.com/).
